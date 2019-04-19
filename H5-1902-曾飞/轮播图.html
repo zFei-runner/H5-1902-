@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<style>
+			*{margin: 0;padding: 0;}
+			ul,ol li{list-style: none;}
+			.wrap{
+				width: 850px;
+				height: 500px;
+				margin:100px auto;
+				overflow: hidden;
+				position: relative;
+				cursor:pointer;
+			}
+			.wrap>a{text-decoration: none;position: absolute;top: 45%;margin-top: -10px;height: 40px;line-height: 32px;text-align: center;width: 40px;font-size: 40px;vertical-align: middle;color: #fff;background: rgba(0,0,0,0.5);z-index:6;}
+			.wrap #goPrev{left:0;}
+			.wrap #goNext{right:0;}
+			ul {height: 100%;width: 5950px;position:absolute;left:-850px;}
+			ul li{float:left;height:100%;}
+			ul li img{height: 100%;}
+			ol{height: 30px;position: absolute;right:5px;bottom:10px;z-index:999;}
+			ol li{width: 30px;height: 30px;text-align: center;line-height: 30px;float:left;margin-right:5px;background-color: white;}
+			ol .ac{background-color: orange;}
+		</style>
+	</head>
+	<body>
+		<div class="wrap">
+			<ol>
+				<li class="ac">1</li>
+				<li >2</li>
+				<li>3</li>
+				<li>4</li>
+				<li>5</li>
+			</ol>
+			<ul>
+				<li><img src="img/5.jpg" alt="" /></li>
+				<li><img src="img/1.jpg" alt="" /></li>
+				<li><img src="img/2.jpg" alt="" /></li>
+				<li><img src="img/3.jpg" alt="" /></li>
+				<li><img src="img/4.jpg" alt="" /></li>
+				<li><img src="img/5.jpg" alt="" /></li>
+				<li><img src="img/1.jpg" alt="" /></li>
+			</ul>
+			<a href="javascript:;" id="goPrev">&laquo;</a>
+    		<a href="javascript:;" id="goNext">&raquo;</a>
+		</div>
+		<script src="tools.js"></script>
+		<script>
+			class lunBo{
+				constructor (selector) {
+					this.container = document.querySelector(selector);
+					this.ol = this.container.querySelector("ol");
+					this.ol_lis=this.ol.querySelectorAll("li");
+					this.ul=this.container.querySelector("ul");
+					this.ul_lis=this.ul.querySelectorAll("li");
+					this.goNext=document.querySelector("#goNext");
+					this.goPrev=document.querySelector("#goPrev");
+					this.index=0;
+					this.timer=null;
+					this.bindEvents();
+									}
+				bindEvents () {
+					let _this=this;
+					//给1-5绑事件
+					Array.from(this.ol_lis).forEach((li,i) => {
+						li.onclick=() => {
+							_this.index=i;
+							this.reMoveClass();
+							li.classList.add("ac");
+							tools.linearMove(_this.ul,"left",-850*(_this.index+1),1000);
+						}
+						
+					});
+					//下一张
+					this.goNext.onclick=this.nextImg.bind(this);
+					
+					//上一张
+					 this.goPrev.onclick=this.prevImg.bind(this);
+					_this.timer=setInterval(_this.goNext.onclick,2000);
+					
+					//鼠标进入停止定时器
+					this.container.onmouseenter=() => {
+						clearInterval(_this.timer);
+						_this.container.onmouseleave=() => {
+							_this.timer=setInterval(_this.goNext.onclick,2000);
+						}
+					}
+					
+				}
+				reMoveClass () {
+					for(let i = 0;i<this.ol_lis.length;i++){
+						this.ol_lis[i].classList.remove("ac");
+					}
+				}
+				//下一张
+				nextImg () {
+					let _this=this;
+					this.index++;
+					if(this.index == this.ol_lis.length){
+						this.index=0;
+						this.ul.style.left=0+"px";
+					}
+					tools.linearMove(_this.ul,"left",-850*(_this.index+1),1000);
+					this.reMoveClass();
+					this.ol_lis[this.index].classList.add("ac");
+				}
+				//上一张
+				prevImg () {
+					let _this=this;
+					this.index--;
+					if(this.index < 0)  {
+						this.index=this.ol_lis.length-1;
+						this.ul.style.left=-850*(this.ol_lis.length+1)+"px";
+					}
+					tools.linearMove(_this.ul,"left",-850*(_this.index+1),1000);
+					this.reMoveClass();
+					this.ol_lis[this.index].classList.add("ac");
+				}
+			}
+			
+			new lunBo(".wrap");
+		</script>
+		
+	</body>
+</html>

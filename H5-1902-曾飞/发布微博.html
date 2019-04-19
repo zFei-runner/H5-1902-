@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<style>
+			*{margin: 0;padding: 0;}
+			a{text-decoration:none;color:#666;}
+			/*模态层样式*/
+			.modal{width: 100%; height: 100%; position: fixed; background: rgba(0,0,0,.3);left: 0;top: 0;}
+			
+			/*登录弹框*/
+			.openBtn{ width:100px; height:40px; border:1px solid #ccc; border-radius:5px; display:block; margin:100px auto}
+			
+			.popBox_login{display: none;width:500px;height:220px; background:#fff;position:absolute;top:0;left:0; z-index:20;}
+			
+			.popBox_login input{ height:30px; width:200px; border:1px solid #ccc;}
+			.popBox_login textarea{border:1px solid #ccc;width: 198px;height: 60px;vertical-align: top;}
+			.popBox_login p{ padding-left:50px; padding-top:15px;}
+			.popBox_login h4{height:40px; line-height:40px; text-indent:1em; background:#ccc;cursor:move}
+			.popBox_login .loginBtn{width:100px; height:30px;border:1px solid #ccc; margin-left:66px}
+			.popBox_login .close_btn{width:20px; text-align:center; line-height:20px; height:20px; position:absolute; top:10px; right:8px; color:#fff;}
+		</style>
+	</head>
+	<body>
+		<button id="login">发布</button>
+		<div id="container" class="popBox_login"></div>
+	</body>
+	<script src="tools.js"></script>
+	<script>
+		class send{
+			constructor (selector) {
+				this.login = document.querySelector(selector);
+				this.popBox_login=document.querySelector(".popBox_login");
+				this.closeBtn=document.querySelector("#closeBtn");
+				this.content=null;
+				this.username = null;
+				this.haomiao = 0;
+				this.lastHaoMiao = 0;
+				this.bindEvent();
+			}
+			bindEvent () {
+				this.login.onclick=() => {
+					//插入元素
+					this.createEle();
+					//创建一个模态层
+					this.modal = document.createElement("div");
+					this.modal.className = "modal";
+					document.body.appendChild(this.modal);
+					//让元素始终处于居中状态
+					tools.showCenter(this.popBox_login);
+				}
+				this.popBox_login.onclick= e => {
+					e=e||event;
+					let target = e.target || e.srcElement;
+					if(target.className==="close_btn"){
+						this.popBox_login.style.display = "none";
+//						document.body.removeChild(this.modal);	
+						this.modal.remove();
+					}else if (target.className==="logonBtn"){
+						this.content=document.querySelector("#content");
+						this.username = document.querySelector("#username");
+						this.popBox_login.style.display = "none";
+//						document.body.removeChild(this.modal);
+						this.modal.remove();
+						document.write("<p class='user'>用户名："+this.username.value + "<br></p>");
+						document.write("<p class='con'>发布内容："+this.content.value + "<br></p>" );
+						let str = this.sendTime();
+						document.write("<p class='time'>时间："+str+"</p>");
+						//注册右击事件
+						this.click();	
+					}
+				};
+			
+			}
+			//鼠标右键
+			click () {
+				//鼠标右键菜单
+				document.oncontextmenu= e => {
+					e=e||event;
+					//阻止默认事件
+					if(e.preventDefault) e.preventDefault();
+					window.event.returnValue=false;
+					let x=e.clientX;
+					let y=e.clientY;
+					//获取菜单对象
+					let obj_ul=document.querySelector(".menu");
+					if(obj_ul!=undefined){
+						obj_ul.style.left=e.clientX + "px";
+						obj_ul.style.top=e.clientY + "px";
+					
+					}else{//当页面中没有ul菜单时，创建一个ul菜单
+						this.menu(x,y);
+					}
+					//点击鼠标让菜单消失
+					document.onclick=function (e){
+						document.querySelector(".menu").remove();
+					};
+//					obj_ul=document.querySelector(".menu");
+					document.body.onclick=e=>{
+						e=e||event;
+						//获取事件源
+						let target=e.target||e.srcElement;
+						if (target.className==="cancel"){
+							this.lastHaoMiao=Date.now();
+							//获取发布时间到撤回时的时间差
+							let value =parseInt((this.lastHaoMiao - this.haomiao) / 1000 /60);
+							if(value<=2){
+								document.querySelector(".user").remove();
+								document.querySelector(".con").remove();
+								document.querySelector(".time").remove();
+							}
+						}
+					}	
+				};
+				
+			}
+			
+			
+			//创建鼠标右键菜单
+			menu (x,y) {
+				let ul = document.createElement("ul");
+				ul.style.backgroundColor="#CCCCCC";
+				ul.style.listStyle="none";
+				ul.classList.add("menu");
+				ul.style.position="absolute";
+				document.body.appendChild(ul);
+				ul.style.left = x +"px";
+				ul.style.top = y +"px";
+				ul.innerHTML="<li><a href='javascript:;' class='cancel' >撤回</a></li><li id='reload'><a href='javascript:;'>刷新</a></li>";
+			}
+			//获取当前发布时间
+			sendTime () {
+				let str="";
+				let date = new Date();
+				let year = date.getFullYear(),
+					month = date.getMonth(),
+					day = date.getDate(),
+					hour = date.getHours(),
+					m = date.getMinutes(),
+					s = date.getSeconds();
+				this.haomiao = date.getTime();
+				str+=year + "年"+month+1+"月"+day+"日"+hour+":"+m+":"+s;
+				return str;
+			}
+			//创建元素
+			createEle () {
+				this.popBox_login.innerHTML = '<h4>信息发布</h4>'+
+				'<a id="closeBtn" class="close_btn" href="javascript:;">×</a>'+
+				'<p><label>用户名&nbsp;&nbsp;：&nbsp;&nbsp;<input id="username" type="text"></label></p>'+
+				'<p><label>信息发布：&nbsp;<textarea id="content"></textarea></label></p>'+
+				'<p><button id="loginBtn" class="logonBtn" type="button">发布</button></p>';
+			}
+		}
+		new send("#login");
+	</script>
+	
+</html>
